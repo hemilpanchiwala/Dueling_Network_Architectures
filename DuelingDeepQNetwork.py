@@ -23,7 +23,7 @@ class DuelingDeepQNetwork(nn.Module):
         self.fc2 = nn.Linear(1024, 512)
 
         self.Value = nn.Linear(512, 1)
-        self.Action = nn.Linear(512, n_actions)
+        self.Advantage = nn.Linear(512, n_actions)
 
         # Initialize optimizer and loss functions
         self.optimizer = optim.RMSprop(self.parameters(), lr=learning_rate, momentum=0.95)
@@ -49,6 +49,9 @@ class DuelingDeepQNetwork(nn.Module):
         return int(np.prod(dim3.size()))
 
     def forward(self, data):
+        """
+        Feed forward the network to get the value, advantage tuple
+        """
         conv_layer1 = F.relu(self.conv1(data))
         conv_layer2 = F.relu(self.conv2(conv_layer1))
         conv_layer3 = F.relu(self.conv3(conv_layer2))
@@ -59,14 +62,20 @@ class DuelingDeepQNetwork(nn.Module):
         fc_layer2 = F.relu(self.fc2(fc_layer1))
 
         value = self.Value(fc_layer2)
-        action = self.Action(fc_layer2)
+        advantage = self.Advantage(fc_layer2)
 
-        return value, action
+        return value, advantage
 
     def save_checkpoint(self):
+        """
+        Saves the checkpoint to the desired file.
+        """
         print('Saving checkpoint...')
         torch.save(self.state_dict(), self.checkpoint_name)
 
     def load_checkpoint(self):
+        """
+        Loads the checkpoint from the saved file.
+        """
         print('Loading checkpoint...')
         self.load_state_dict(torch.load(self.checkpoint_name))
