@@ -110,6 +110,7 @@ class DuelingDQNAgent(object):
         q_next = torch.add(value_s_dash, advantage_s_dash - advantage_s_dash.mean(dim=1))
         max_q_next = q_next.max(dim=1)
 
+        q_next[done] = 0
         q_target = reward + self.gamma * max_q_next[0]
 
         # Computes loss and performs backpropagation

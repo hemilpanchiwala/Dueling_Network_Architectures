@@ -1,16 +1,49 @@
-# This is a sample Python script.
+import gym
+import numpy as np
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+import DuelingDQNAgent as ddqnAgent
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    env = gym.make('PongNoFrameskip-v4')
+    n_games = 500
+    scores = []
+    epsilon_history = []
+    step_count = 0
+    best_score = -np.inf
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    load_checkpoint = False
+
+    agent = ddqnAgent.DuelingDQNAgent(learning_rate=6.25e-5, n_actions=env.action_space.n,
+                                      input_dims=env.observation_space.shape, gamma=0.99,
+                                      epsilon=1.0, batch_size=32, memory_size=10e6,
+                                      replace_network_count=1000)
+
+    for i in range(n_games):
+
+        obs = env.reset()
+        score = 0
+        done = False
+
+        while not done:
+            action = agent.choose_action(obs)
+            new_obs, reward, done, info = env.step(action)
+            score += reward
+            if not load_checkpoint:
+                agent.store_experience(obs, action, reward, new_obs, done)
+                agent.learn()
+            obs = new_obs
+            step_count += 1
+
+        scores.append(score)
+        epsilon_history.append(agent.epsilon)
+        avg_score = np.mean(scores)
+
+        if avg_score > best_score:
+            if not load_checkpoint:
+                agent.save_model()
+            best_score = avg_score
+
+        print('episode: ', i, ' score: ', score, ' avg. score: ', avg_score,
+              ' best_score: ', best_score, ' epsilon: ', agent.epsilon, ' steps ', step_count)
+
