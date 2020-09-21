@@ -8,17 +8,18 @@ class ExperienceReplayMemory(object):
         self.counter = 0
 
         # initializes the state, next_state, action, reward, and terminal experience memory
-        self.state_memory = np.zeros((memory_size, input_dims), dtype=np.float64)
-        self.next_state_memory = np.zeros((memory_size, input_dims), dtype=np.float64)
-        self.reward_memory = np.zeros((memory_size, 1), dtype=np.float64)
-        self.action_memory = np.zeros((memory_size, 1), dtype=np.int)
-        self.terminal_memory = np.zeros((memory_size, 1), dtype=bool)
+        print(type(input_dims))
+        self.state_memory = np.zeros((memory_size, *input_dims), dtype=np.float32)
+        self.next_state_memory = np.zeros((memory_size, *input_dims), dtype=np.float32)
+        self.reward_memory = np.zeros(memory_size, dtype=np.float32)
+        self.action_memory = np.zeros(memory_size, dtype=np.int64)
+        self.terminal_memory = np.zeros(memory_size, dtype=bool)
 
     def add_experience(self, state, action, reward, next_state, done):
         """
         Adds new experience to the memory.
         """
-        curr_index = self.counter / self.max_mem_size
+        curr_index = self.counter % self.max_mem_size
 
         self.state_memory[curr_index] = state
         self.action_memory[curr_index] = action

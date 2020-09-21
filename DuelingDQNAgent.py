@@ -8,7 +8,7 @@ import torch
 class DuelingDQNAgent(object):
     def __init__(self, learning_rate, n_actions, input_dims, gamma,
                  epsilon, batch_size, memory_size, replace_network_count,
-                 dec_epsilon=0.99e-6, min_epsilon=0.1, checkpoint_dir='/tmp/ddqn/'):
+                 dec_epsilon=1e-5, min_epsilon=0.1, checkpoint_dir='/tmp/ddqn/'):
         self.learning_rate = learning_rate
         self.n_actions = n_actions
         self.input_dims = input_dims
@@ -55,8 +55,7 @@ class DuelingDQNAgent(object):
         Gives a sample experience from the experience replay memory
         """
         state, action, reward, next_state, done = self.experience_replay_memory.get_random_experience(
-            batch_size=self.batch_size
-        )
+            self.batch_size)
 
         t_state = torch.tensor(state).to(self.q_eval.device)
         t_action = torch.tensor(action).to(self.q_eval.device)
@@ -78,8 +77,7 @@ class DuelingDQNAgent(object):
         Chooses an action with epsilon-greedy method
         """
         if np.random.random() > self.epsilon:
-            temp = np.array([observation], dtype=np.float)
-            state = torch.tensor(temp).to(self.q_eval.device)
+            state = torch.tensor([observation], dtype=torch.float).to(self.q_eval.device)
             value, advantages = self.q_eval.forward(state)
 
             action = torch.argmax(advantages).item()
@@ -95,8 +93,7 @@ class DuelingDQNAgent(object):
         self.q_eval.optimizer.zero_grad()
         self.replace_target_network()
 
-        state, action, reward, next_state, done = \
-            self.experience_replay_memory.get_random_experience(self.batch_size)
+        state, action, reward, next_state, done = self.get_sample_experience()
         # Gets the evenly spaced batches
         batches = np.arange(self.batch_size)
 
@@ -106,19 +103,20 @@ class DuelingDQNAgent(object):
 
         # Computes the Q values using
         # Q = V + (A - (1/|A|) * (sum(A))
-        q_pred = torch.add(value_s, advantage_s - advantage_s.mean(dim=1))[batches, advantage_s]
-        q_next = torch.add(value_s_dash, advantage_s_dash - advantage_s_dash.mean(dim=1))
+        q_pred = torch.add(value_s, advantage_s - advantage_s.mean(dim=1, keepdim=True))[batches, action]
+        q_next = torch.add(value_s_dash, advantage_s_dash - advantage_s_dash.mean(dim=1, keepdim=True))
         max_q_next = q_next.max(dim=1)
 
-        q_next[done] = 0
+        q_next[done] = 0.0
         q_target = reward + self.gamma * max_q_next[0]
 
         # Computes loss and performs backpropagation
-        loss = self.q_eval.loss(q_pred, q_target).to(self.q_eval.device)
+        loss = self.q_eval.loss(q_target, q_pred).to(self.q_eval.device)
         loss.backward()
 
         self.q_eval.optimizer.step()
         self.decrement_epsilon()
+        self.learn_steps_count += 1
 
     def save_model(self):
         """

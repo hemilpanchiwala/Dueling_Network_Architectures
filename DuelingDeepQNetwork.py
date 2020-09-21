@@ -12,7 +12,7 @@ class DuelingDeepQNetwork(nn.Module):
         super(DuelingDeepQNetwork, self).__init__()
 
         # 3 convolutional layers
-        self.conv1 = nn.Conv2d(input_dims, 32, kernel_size=8, stride=4)
+        self.conv1 = nn.Conv2d(input_dims[0], 32, kernel_size=8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
 
@@ -26,7 +26,7 @@ class DuelingDeepQNetwork(nn.Module):
         self.Advantage = nn.Linear(512, n_actions)
 
         # Initialize optimizer and loss functions
-        self.optimizer = optim.RMSprop(self.parameters(), lr=learning_rate, momentum=0.95)
+        self.optimizer = optim.RMSprop(self.parameters(), lr=learning_rate)
         self.loss = nn.MSELoss()
 
         # sets device - 'cuda:0' for gpu or 'cpu' for cpu
@@ -42,7 +42,7 @@ class DuelingDeepQNetwork(nn.Module):
         Returns the product of output dimensions of convoluted output to feed
         in linear classifier.
         """
-        temp = torch.zeros(1, input_dims)
+        temp = torch.zeros(1, *input_dims)
         dim1 = self.conv1(temp)
         dim2 = self.conv2(dim1)
         dim3 = self.conv3(dim2)
@@ -56,7 +56,7 @@ class DuelingDeepQNetwork(nn.Module):
         conv_layer2 = F.relu(self.conv2(conv_layer1))
         conv_layer3 = F.relu(self.conv3(conv_layer2))
 
-        output_conv_layer = conv_layer3.view(conv_layer3[0], -1)
+        output_conv_layer = conv_layer3.view(conv_layer3.size()[0], -1)
 
         fc_layer1 = F.relu(self.fc1(output_conv_layer))
         fc_layer2 = F.relu(self.fc2(fc_layer1))
