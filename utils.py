@@ -1,4 +1,4 @@
-# Environment taken from the implemen
+# Environment taken from the open ai wrapper
 import collections
 import cv2
 import numpy as np
