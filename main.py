@@ -1,8 +1,9 @@
 import utils
 import numpy as np
+import matplotlib.pyplot as plt
 
-import DuelingDQNAgent as ddqnAgent
-
+import DuelingDQNAgent as duelingdqnAgent
+import DuelingDDQNAgent as duelingddqnAgent
 
 if __name__ == '__main__':
     env = utils.make_env('PongNoFrameskip-v4')
@@ -10,17 +11,28 @@ if __name__ == '__main__':
     n_games = 500
     scores = []
     epsilon_history = []
+    steps = []
     step_count = 0
     best_score = -np.inf
 
     load_checkpoint = False
 
     print(env.observation_space.shape)
-    agent = ddqnAgent.DuelingDQNAgent(learning_rate=0.0001, n_actions=env.action_space.n,
-                                      input_dims=env.observation_space.shape, gamma=0.99,
-                                      epsilon=1.0, batch_size=32, memory_size=1000,
-                                      replace_network_count=10000,
-                                      checkpoint_dir='/home/blackreaper/Documents/temp/duelingdqn/')
+
+    agent = duelingdqnAgent.DuelingDQNAgent(learning_rate=0.0001, n_actions=env.action_space.n,
+                                            input_dims=env.observation_space.shape, gamma=0.99,
+                                            epsilon=0.6, batch_size=32, memory_size=1000,
+                                            replace_network_count=1000,
+                                            checkpoint_dir='/home/blackreaper/Documents/temp/duelingdqn/')
+
+    # agent = duelingdqnAgent.DuelingDQNAgent(learning_rate=0.0001, n_actions=env.action_space.n,
+    #                                         input_dims=env.observation_space.shape, gamma=0.99,
+    #                                         epsilon=0.1, batch_size=32, memory_size=1000,
+    #                                         replace_network_count=1000,
+    #                                         checkpoint_dir='/home/blackreaper/Documents/temp/duelingddqn/')
+
+    if load_checkpoint:
+        agent.load_model()
 
     for i in range(n_games):
 
@@ -40,6 +52,7 @@ if __name__ == '__main__':
 
         scores.append(score)
         epsilon_history.append(agent.epsilon)
+        steps.append(step_count)
         avg_score = np.mean(scores)
 
         if score > avg_score:
@@ -51,3 +64,26 @@ if __name__ == '__main__':
 
         print('episode: ', i, ' score: ', score, ' avg. score: ', avg_score,
               ' best_score: ', best_score, ' epsilon: ', agent.epsilon, ' steps ', step_count)
+
+    figure = plt.figure()
+    plot1 = figure.add_subplot(1, 1, 1, label='plot1')
+    plot2 = figure.add_subplot(1, 1, 1, label='plot2')
+
+    plot1.plot(steps, epsilon_history, color='C0')
+    plot1.set_xlabel('No. of steps', color='C0')
+    plot1.set_ylabel('Epsilon', color='C0')
+    plot1.tick_params(axis='x', color="C0")
+    plot1.tick_params(axis='y', color="C0")
+
+    running_avg = np.empty(len(scores))
+    for i in range(len(scores)):
+        running_avg[i] = np.mean(scores[max(0, i - 30): i + 1])
+
+    plot2.plot(steps, running_avg, color='C1')
+    plot2.axes.get_xaxis().set_visible(False)
+    plot2.yaxis.tick_right()
+    plot2.set_ylabel('Avg. scores', color='C1')
+    plot2.yaxis.set_label_position('right')
+    plot2.tick_params(axis='y', color='C1')
+
+    plt.savefig('/home/blackreaper/Documents/temp/duelingdqn/plots/duelingdqn_results.png')
