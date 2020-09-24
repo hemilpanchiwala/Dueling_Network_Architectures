@@ -1,7 +1,23 @@
-# Dueling-Network-Architectures
-Implementation of Dueling Network Architectures for Deep Reinforcement Learning paper with Pytorch
+# Dueling Network Architectures
+This repository provides the Pytorch implementation of Dueling Network Architectures for Deep Reinforcement Learning paper
 
 Link to the paper: https://arxiv.org/pdf/1511.06581.pdf
+
+## Overview
+This paper presents a complete new network architecture for the model-free reinforcement learning layered over the existing architectures. This dueling network represents two separate estimates, one for the state value function and another for the action advantage function. The main benefit of separating estimates is that the agent can learn over the actions without imposing any change in the basic reinforcement learning algorithm.  It is an alternative but complementary approach of focusing primarily on innovating a neural network architecture which provides more better results for model-free RL. This dueling algorithm outperforms the state-of-the-art on the Atari 2600 domain.
+
+In the implementation, I have used both the Q-Network algorithms, DeepQNetwork and improvised DoubleDeepQNetwork (similar to the DeepQNetwork with a small update in the output value `y`) of [van Hasselt et al. (2015)](https://arxiv.org/abs/1509.06461). I have also used an experience replay memory which improves the algorithm more better as the experience tuples can provide high expected learning progress and also leads to faster learning and better policy. I have currently used the random policy for getting a experience from the replay memory (prioritized replay even performs better).
+
+For choosing any action at a particular state, I have used the epsilon-greedy policy specified as below:
+<img src="https://media.geeksforgeeks.org/wp-content/uploads/20200318200401/Screenshot-2020-03-18-at-8.03.38-PM.png" />
+
+The dueling network architecture now considers the action value function as the combination of the value and the advantage functions. The paper first starts with the addition of value and advantage but that had an issue of identifiability (adding some constant to value and subtracting same from advantage results in same Q value). To address this, paper says to force the advantage estimator function to have zero advantage at the chosen action. The equation looks as follows:
+<p align="center"><img src="https://raw.githubusercontent.com/hemilpanchiwala/Dueling-Network-Architectures/master/images/Q_with_max.png"/></p>
+
+I have used an alternative equation (mentioned in the paper) which replaces the max operator in the above equation to average of all the advantages. Also, this makes the equation linear. Here's the equation used:
+<p align="center"><img src="https://raw.githubusercontent.com/hemilpanchiwala/Dueling-Network-Architectures/master/images/Q_with_mean.png"/></p>
+
+ 
 
 # Setup
 ## Prerequirements
