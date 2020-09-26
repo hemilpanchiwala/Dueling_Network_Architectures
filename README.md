@@ -77,6 +77,8 @@ Both the architectures provided good results of winning with a scores up to 20-2
 
 Here, the high fluctuations in between the plots shows that the agent explores instead of choosing any greedy action which may result in some better policy.
 
+<b>Note</b>: You can view the plot with each scores at [DuelingDeepQNetwork](https://github.com/hemilpanchiwala/Dueling-Network-Architectures/blob/master/images/dueling_dqn.png) and [DuelingDoubleDeepQNetwork](https://github.com/hemilpanchiwala/Dueling-Network-Architectures/blob/master/images/dueling_ddqn.png) plot images.
+
 # Observations  
 The DuelingDeepQNetwork as well as DuelingDoubleDeepQNetwork agents were trained for 1000 games with storing the scores, epsilon, and steps count. The hyperparameters which provided good results after training are as follows:  
   
