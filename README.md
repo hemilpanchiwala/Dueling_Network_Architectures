@@ -1,7 +1,9 @@
 
-# Dueling Network Architectures  
+# Dueling Network Architectures for Deep Reinforcement Learning  
 This repository provides the Pytorch implementation of Dueling Network Architectures for Deep Reinforcement Learning paper  
-  
+
+Authors: Ziyu Wang, Tom Schaul, Matteo Hessel, Hado van Hasselt, Marc Lanctot, Nando de Freitas
+
 Link to the paper: https://arxiv.org/pdf/1511.06581.pdf  
   
 ## Overview  
@@ -49,11 +51,13 @@ pip3 install -r requirements.txt
 - `DuelingDQNAgent.py` - This file provides agent for the DuelingDeepQNetwork containing the main learning function. With this, it also contains methods for changing epsilon, getting samples, storing experiences, choosing actions (using epsilon-greedy approach), replacing target networks, etc.  
 - `DuelingDDQNAgent.py` - This file provides agent for the DuelingDoubleDeepQNetwork having major things similar to the DuelingDQNAgent with some changes in the learn function.  
 - `ExperienceReplayMemory.py` - This file contains the past experiences observed by the agent while playing the games which becomes useful in learning. It contains the methods for adding an experience, and getting any random experience.  
-- `utils.py` - This file contains the code for building the environment of the Atari game with methods for preprocessing frames, stacking frames, etc. needed to make it similar to the DeepMind paper.  
+- `utils.py` - This file contains the code for building the environment of the Atari game with methods for preprocessing frames, stacking frames, etc. needed to make it similar to the DeepMind paper.
+- `results/` - This folder contains the saved models learnt by DuelingDeepQNetwork and DuelingDoubleDeepQNetwork.
+- `images/` - This folder contains the images used in this README.
 - `README.md` - This file which gives complete overview of the implementation.  
 - `requirements.txt` - Provides ready to install all the required libraries for running the implementation.  
   
-# Architecture  
+# Dueling Architecture  
 <p align="center"><img src="https://raw.githubusercontent.com/hemilpanchiwala/Dueling-Network-Architectures/master/images/DuelingDQNArchitecture.png" alt="Architecture"/></p>  
   
 The architecture of the Dueling Deep Q Network is quite simple with just one important thing of taking two outputs from the same neural network (instead of one). Here, basically the input_dimensions are passed to the network which are convoluted using three convolution layers with each following the ReLU (Rectified Linear Unit) activation. The first convolution layer convolutes the input to 32 output channels with kernel size of 3 x 3 and stride of 4. The second convolution convolutes the output from the first one into 64 output channels with kernel size of 4 x 4 and stride of 2. The final convolution layer convolutes the 64 channels from the second one to 64 output channels again but with a kerner size of 3 x 3 and stride of 1.  
@@ -64,6 +68,15 @@ These value and advantage functions are then used to calculate the Q value of th
 ```  
 Q_value = Value + (Advantage - mean(Advantage))  
 ```  
+
+# Results
+Both the architectures provided good results of winning with a scores up to 20-22 in Pong game (PongFrameskip-v4) by learning over 1000 games. Here are the learning plots of both the algorithms with scores averaged over last 30 to avoid high fluctuations:
+
+<img src="https://raw.githubusercontent.com/hemilpanchiwala/Dueling-Network-Architectures/master/images/dueling_dqn_mean.png"/>
+<img src="https://raw.githubusercontent.com/hemilpanchiwala/Dueling-Network-Architectures/master/images/dueling_ddqn_mean.png"/>
+
+Here, the high fluctuations in between the plots shows that the agent explores instead of choosing any greedy action which may result in some better policy.
+
 # Observations  
 The DuelingDeepQNetwork as well as DuelingDoubleDeepQNetwork agents were trained for 1000 games with storing the scores, epsilon, and steps count. The hyperparameters which provided good results after training are as follows:  
   
@@ -81,8 +94,8 @@ The DuelingDeepQNetwork as well as DuelingDoubleDeepQNetwork agents were trained
 | Input dimensions | Shape of observation space |  
 | n_actions | Taken from action space of environment |  
 | | |  
-  
-The results of the DuelingDoubleDeepQNetwork agent achieved winning results faster compared to the DuelingDeepQNetwork agent while playing the Pong game ('PongFrameskip-v4').   
+
+<b>Note:</b> The paper describes starting epsilon value as 1.0 which performs better when training for a lot of steps (about 50 million). While here, I have decreased the starting epsilon, i.e., exploration, to 0.6 as for 1000 games, it runs nearly for only million steps. 
   
 # References  
 - [Intro to Reinforcement Learning](https://www.youtube.com/playlist?list=PLqYmG7hTraZDM-OYHWgPebj2MfCFzFObQ) by David Silver (greatly helped to get insights of Reinforcement learning)  
